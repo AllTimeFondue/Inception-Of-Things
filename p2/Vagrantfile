@@ -1,0 +1,27 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.provider :libvirt
+
+  config.vm.define "tlebonS"
+  config.vm.box = "debian/trixie64"
+  config.vm.box_version = "13.20260519.1"
+
+  config.vm.boot_timeout = 600
+  config.ssh.connect_timeout = 10
+  config.ssh.keep_alive = true
+
+  config.vm.hostname = "tlebonS"
+  config.vm.network "private_network", ip: "192.168.56.110"
+    
+  config.vm.provider "libvirt" do |prov|
+    prov.memory = 4096
+    prov.cpus = 2
+  end
+
+  config.vm.provision "server_script",
+    type: "shell",
+    path: "./scripts/server.sh"
+end

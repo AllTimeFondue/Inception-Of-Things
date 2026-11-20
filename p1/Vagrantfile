@@ -1,0 +1,54 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.provider :libvirt
+
+  config.vm.box = "debian/trixie64"
+  config.vm.box_version = "13.20260519.1"
+
+  config.vm.boot_timeout = 600
+  config.ssh.connect_timeout = 10
+  config.ssh.keep_alive = true
+
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "./sync_folder",
+    "/var/www/sync_folder",
+    create: true,
+    type: "nfs",
+    nfs_udp: false
+
+  #--- SERVER ------------------------------------------------------#
+
+  config.vm.define "tlebonS" do |server|
+    server.vm.hostname = "tlebonS"
+    server.vm.network "private_network", ip: "192.168.56.110"
+    
+    server.vm.provider "libvirt" do |prov|
+      prov.memory = 2048
+      prov.cpus = 2
+    end
+
+    server.vm.provision "server_script",
+      type: "shell",
+      path: "./scripts/server.sh"
+  end
+
+  #--- WORKER ------------------------------------------------------#
+
+  config.vm.define "tlebonSW" do |worker|
+    worker.vm.hostname = "tlebonSW"
+    worker.vm.network "private_network", ip: "192.168.56.111"
+
+    worker.vm.provider "libvirt" do |prov|
+      prov.memory = 1024
+      prov.cpus = 1
+    end
+
+    worker.vm.provision "worker_script",
+      type: "shell",
+      path: "./scripts/worker.sh"
+  end
+
+end
